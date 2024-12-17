@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import * as admin from 'firebase-admin';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class FirebaseService {
   constructor(private configService: ConfigService) {
-    const firebaseConfigPath =
-      this.configService.get<string>('FIREBASE_CONFIG');
     if (!admin.apps.length) {
       admin.initializeApp({
-        credential: admin.credential.cert(require(firebaseConfigPath)),
+        credential: admin.credential.applicationDefault(), 
+        projectId: this.configService.get<string>('FIREBASE_PROJECT_ID'),
       });
     }
   }
@@ -18,7 +17,7 @@ export class FirebaseService {
     try {
       return await admin.auth().verifyIdToken(token);
     } catch (error) {
-      throw new Error('Invalid Firebase Token');
+      throw new Error('Invalid Firebase token');
     }
   }
 }
